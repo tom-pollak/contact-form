@@ -16,6 +16,20 @@ class CustomUserManager(BaseUserManager):
         if not email:
             raise ValueError(_('Email must be set'))
         email = self.normalize_email(email)
+
+        if not extra_fields.get('tier'):
+            T = Tier.objects.get(name='Free')
+            extra_fields.setdefault('tier', T)
+
+            if str(extra_fields.get('tier')) != 'Free':
+                raise ValueError(_('User must have free tier'))
+
+        if extra_fields.get('tier') is None:
+            raise ValueError(_('User must have a tier.'))
+
+        if (extra_fields.get('is_superuser') is not True) and (str(extra_fields.get('tier')) != 'Free'):
+            raise ValueError(_('User must be created with Free tier'))
+
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save()
@@ -29,8 +43,14 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
 
+        T = Tier.objects.get(name='Unlimited')
+        extra_fields.setdefault('tier', T)
+
         if extra_fields.get('is_staff') is not True:
-            raise ValueError(_('Superuser must have is_staff=True.'))
+            raise ValueError(_('SuperUser must have is_staff=True.'))
         if extra_fields.get('is_superuser') is not True:
-            raise ValueError(_('Superuser must have is_superuser=True.'))
+            raise ValueError(_('SuperUser must have is_superuser=True.'))
+
+        if str(extra_fields.get('tier')) != 'Unlimited':
+            raise ValueError(_('SuperUser must have unlimited tier.'))
         return self.create_user(email, password, **extra_fields)

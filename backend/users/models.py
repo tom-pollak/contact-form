@@ -8,7 +8,7 @@ from tier.models import Tier
 class CustomUser(AbstractUser):
     username = None
     email = models.EmailField(_('email address'), unique=True)
-    tier = models.ForeignKey(Tier, to_field='name', on_delete=models.SET_DEFAULT, default=1)
+    tier = models.ForeignKey(Tier, on_delete=models.SET_NULL, null=True, default=None)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
