@@ -1,17 +1,18 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
-from tier.models import Tier
+from tiers.models import Tier
 
 class UsersManagersTest(TestCase):
     def setUp(self):
-        Tier.objects.create(pk=1, name="Free", no_forms=5, price=0.00)
-        Tier.objects.create(pk=2, name="Intermediate", no_forms=50, price=2.49)
-        Tier.objects.create(pk=3, name="Unlimited", no_forms=2147483647, price=4.99)
+        self.tier_free = Tier.objects.create(pk=1, name="Free", no_forms=5, price=0.00)
+        self.tier_intermediate = Tier.objects.create(pk=2, name="Intermediate", no_forms=50, price=2.49)
+        self.tier_unlimited = Tier.objects.create(pk=3, name="Unlimited", no_forms=2147483647, price=4.99)
 
     def test_create_user(self):
         User = get_user_model()
         user = User.objects.create_user(email='normal@user.com', password='foo')
+        self.assertEqual(str(user), 'normal@user.com')
         self.assertEqual(user.email, 'normal@user.com')
 
         self.assertEqual(user.tier.name, 'Free')
@@ -28,12 +29,11 @@ class UsersManagersTest(TestCase):
             User.objects.create_user(email='')
         with self.assertRaises(ValueError):
             User.objects.create_user(email='', password='foo')
-            
+
         with self.assertRaises(ValueError):
             User.objects.create_user(email='', password='foo', tier='Free')
         with self.assertRaises(ValueError):
-            T = Tier.objects.get(name="Unlimited")
-            User.objects.create_user(email='', password='foo', tier=T)
+            User.objects.create_user(email='', password='foo', tier=self.tier_free)
     
     def test_create_superuser(self):
         User = get_user_model()
@@ -51,5 +51,4 @@ class UsersManagersTest(TestCase):
                 email='super@user.com', password='foo', is_superuser=False)
         
         with self.assertRaises(ValueError):
-            T = Tier.objects.get(name="Free")
-            User.objects.create_superuser(email='', password='foo', tier=T)
+            User.objects.create_superuser(email='', password='foo', tier=self.tier_unlimited)

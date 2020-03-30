@@ -3,12 +3,12 @@ from django.contrib.auth.models import AbstractUser
 from django.utils.translation import ugettext_lazy as _
 
 from .managers import CustomUserManager
-from tier.models import Tier
+from tiers.models import Tier
 
 class CustomUser(AbstractUser):
     username = None
     email = models.EmailField(_('email address'), unique=True)
-    tier = models.ForeignKey(Tier, on_delete=models.SET_NULL, null=True, default=None)
+    tier = models.ForeignKey(Tier, on_delete=models.SET_NULL, null=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

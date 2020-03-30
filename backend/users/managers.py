@@ -1,7 +1,7 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.utils.translation import ugettext_lazy as _
 
-from tier.models import Tier
+from tiers.models import Tier
 
 class CustomUserManager(BaseUserManager):
     """
@@ -17,17 +17,14 @@ class CustomUserManager(BaseUserManager):
             raise ValueError(_('Email must be set'))
         email = self.normalize_email(email)
 
-        if not extra_fields.get('tier'):
-            T = Tier.objects.get(name='Free')
-            extra_fields.setdefault('tier', T)
-
-            if str(extra_fields.get('tier')) != 'Free':
-                raise ValueError(_('User must have free tier'))
+        #if extra_fields.get('tier') is None:
+        T = Tier.objects.get(name='Free')
+        extra_fields.setdefault('tier', T)
 
         if extra_fields.get('tier') is None:
             raise ValueError(_('User must have a tier.'))
 
-        if (extra_fields.get('is_superuser') is not True) and (str(extra_fields.get('tier')) != 'Free'):
+        if (extra_fields.get('is_superuser') is not True) and (extra_fields.get('tier').name != 'Free'):
             raise ValueError(_('User must be created with Free tier'))
 
         user = self.model(email=email, **extra_fields)
@@ -51,6 +48,6 @@ class CustomUserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError(_('SuperUser must have is_superuser=True.'))
 
-        if str(extra_fields.get('tier')) != 'Unlimited':
+        if extra_fields.get('tier').name != 'Unlimited':
             raise ValueError(_('SuperUser must have unlimited tier.'))
         return self.create_user(email, password, **extra_fields)
