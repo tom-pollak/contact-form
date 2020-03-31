@@ -1,2 +1,4 @@
 frontend/build linguist-detectable=false
 frontend/config linguist-detectable=false
+frontend/.eslintrc.js linguist-detectable=false
+frontend/.postcssrc.js linguist-detectable=false
