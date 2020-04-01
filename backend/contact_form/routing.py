@@ -5,4 +5,4 @@ from django.urls import path
 from forms.views import FormViewSet
 
 router = DefaultRouter()
-router.register(r'forms', FormViewSet, basename='form')
+router.register(r'forms', FormViewSet, basename='forms')

@@ -1,5 +1,7 @@
 from django.test import TestCase
+from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
+from rest_framework import status
 
 from tiers.models import Tier
 
@@ -52,3 +54,8 @@ class UsersManagersTest(TestCase):
         
         with self.assertRaises(ValueError):
             User.objects.create_superuser(email='', password='foo', tier=self.tier_unlimited)
+
+#TODO
+class UserAPITest(APITestCase):
+    def test_create_user(self):
+        pass

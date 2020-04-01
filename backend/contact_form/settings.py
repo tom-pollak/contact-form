@@ -29,7 +29,7 @@ SECRET_KEY = 'xilm)d5zw+u(z!q=*xkxfmvr)=vd)-fny7qr9e@as4^#0l2boe'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1']
 
 
 # Application definition
@@ -144,9 +144,11 @@ REST_FRAMEWORK = {
     }
 }
 
-SIMPLE_JWT = {
+REST_USE_JWT = True
+
+"""SIMPLE_JWT = {
    'AUTH_HEADER_TYPES': ('JWT',),
-}
+}"""
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
