@@ -1,8 +1,18 @@
 {
-    "python.pythonPath": "venv/bin/python3",
-    "files.autoSave": "onWindowChange",
-    "python.linting.pylintArgs": [
-        "--load-plugins=pylint_django",
-        "--errors-only",
-    ],
+   "python.pythonPath": "venv/bin/python",
+   "files.autoSave": "onWindowChange",
+   "python.linting.pylintArgs": [
+      "--load-plugins=pylint_django",
+      "--errors-only",
+      ],
+   "vim.otherModesKeyBindings": [
+      {
+         "before": [ "<leader>", "o" ],
+         "after": ["o", "<ESC>", "k"]
+      }
+      ],
+      "vim.leader": " ",
 }
+
+
+

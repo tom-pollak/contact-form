@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.db.utils import IntegrityError
+from django.db import transaction
 
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
@@ -23,11 +24,14 @@ class FormViewSet(viewsets.ModelViewSet):
 
         except IntegrityError as err:
             return err
-
+    
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        err = self.perform_create(serializer)
+        with transaction.atomic():
+            err = self.perform_create(serializer)
+
         if err:
             if 'name' in str(err):
                 err = 'name'

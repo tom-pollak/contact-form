@@ -7,5 +7,6 @@ from users.models import CustomUser
 class FormSerializer(serializers.ModelSerializer):
     class Meta:
         model = Form
-        fields = ('name', 'url', 'test_period', 'email_reminder', 'creation_date', 'active', 'created_by',)
+        fields = '__all__'
         read_only_fields = ('created_by', 'creation_date',)
+

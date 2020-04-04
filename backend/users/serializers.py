@@ -9,7 +9,10 @@ class CustomUserSerializer(serializers.ModelSerializer):
                   'date_joined', 'password',)
         write_only_fields = ('password',)
         read_only_fields = ('is_staff', 'is_superuser', 'is_active', 'date_joined',)
-    
+
+
+
+
     def create(self, validated_data):
         User = get_user_model()
         user = User.objects.create_user(**validated_data)
