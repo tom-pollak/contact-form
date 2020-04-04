@@ -3,7 +3,7 @@ import copy
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 
 from rest_framework.test import APITestCase
 from rest_framework import status
@@ -30,7 +30,6 @@ class FormTest(APITestCase):
         authorization = 'Bearer ' + self.token
         self.client.credentials(HTTP_AUTHORIZATION=authorization)
 
-    @transaction.atomic
     def test_create_form(self):
         data = {
             'name': 'Test',
@@ -45,15 +44,13 @@ class FormTest(APITestCase):
         
         data_copy = copy.deepcopy(data)
         data_copy['name'] = 'Test diff'
-        with transaction.atomic():
-            response = self.client.post(self.forms_url, data=data_copy)
+        response = self.client.post(self.forms_url, data=data_copy)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data['url'], 'User already created a form with that url.')
 
         data_copy = copy.deepcopy(data)
         data_copy['url'] = 'https://test-diff.com'
-        with transaction.atomic():
-            response = self.client.post(self.forms_url, data=data_copy)
+        response = self.client.post(self.forms_url, data=data_copy)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data['name'], 'User already created a form with that name.')
         
@@ -83,4 +80,42 @@ class FormTest(APITestCase):
         return None
 
     def test_update_forms(self):
-        pass
+        data = {
+            'name': 'Test',
+            'url': 'https://test.com',
+        }
+        response = self.client.post(self.forms_url, data=data)
+        id = response.data['id']
+        url = self.forms_url + str(id) + '/'
+
+        response = self.client.patch(url, data={'name': 'New'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.patch(url, data={'created_by': 2}) # attempt to change owner
+        self.assertEqual(response.data['created_by'], 1)
+
+        data = {
+            'name': 'Test 2',
+            'url': 'https://different-url.com',
+        }
+        response = self.client.post(self.forms_url, data=data)
+        id = response.data['id']
+        url = self.forms_url + str(id) + '/'
+
+        # url is same as prev breaking unique integrity
+        response = self.client.put(url, data={'name': 'Test 2', 'url': 'https://test.com'})
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_delete_form(self):
+        data = {
+            'name': 'Test',
+            'url': 'https://test.com',
+            'test_period': 5
+        }
+        response = self.client.post(self.forms_url, data=data)
+        id = response.data['id']
+        url = self.forms_url + str(id) + '/'
+
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
