@@ -86,7 +86,7 @@ class FormTest(APITestCase):
         }
         response = self.client.post(self.forms_url, data=data)
         id = response.data['id']
-        url = self.forms_url + str(id) + '/'
+        url = reverse('api:forms-detail', kwargs={'pk': id})
 
         response = self.client.patch(url, data={'name': 'New'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -100,7 +100,7 @@ class FormTest(APITestCase):
         }
         response = self.client.post(self.forms_url, data=data)
         id = response.data['id']
-        url = self.forms_url + str(id) + '/'
+        url = reverse('api:forms-detail', kwargs={'pk': id})
 
         # url is same as prev breaking unique integrity
         response = self.client.put(url, data={'name': 'Test 2', 'url': 'https://test.com'})
@@ -115,7 +115,7 @@ class FormTest(APITestCase):
         }
         response = self.client.post(self.forms_url, data=data)
         id = response.data['id']
-        url = self.forms_url + str(id) + '/'
+        url = reverse('api:forms-detail', kwargs={'pk': id})
 
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
