@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 import json
+from datetime import timedelta
 from six.moves.urllib import request
 from cryptography.x509 import load_pem_x509_certificate
 from cryptography.hazmat.backends import default_backend
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'django_extensions',
     'djoser',
+    'corsheaders',
     'forms',
     'users',
     'tiers',
@@ -53,6 +55,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -129,6 +132,7 @@ USE_L10N = True
 
 USE_TZ = True
 
+CORS_ORIGIN_ALLOW_ALL = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
@@ -145,10 +149,6 @@ REST_FRAMEWORK = {
 }
 
 REST_USE_JWT = True
-
-"""SIMPLE_JWT = {
-   'AUTH_HEADER_TYPES': ('JWT',),
-}"""
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
