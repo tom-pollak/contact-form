@@ -1,6 +1,6 @@
 # frontend
 
-> Vue.js contact form frontend
+> Frontend of contact form project
 
 ## Build Setup
 
