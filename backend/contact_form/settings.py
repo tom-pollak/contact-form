@@ -11,11 +11,6 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
-import json
-from datetime import timedelta
-from six.moves.urllib import request
-from cryptography.x509 import load_pem_x509_certificate
-from cryptography.hazmat.backends import default_backend
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -30,7 +25,7 @@ SECRET_KEY = 'xilm)d5zw+u(z!q=*xkxfmvr)=vd)-fny7qr9e@as4^#0l2boe'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -155,10 +150,10 @@ AUTH_USER_MODEL = 'users.CustomUser'
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
     'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}',
-    #'ACTIVATION_URL': '#/activate/{uid}/{token}',
-    #'SEND_ACTIVATION_EMAIL': True,
+    # 'ACTIVATION_URL': '#/activate/{uid}/{token}',
+    # 'SEND_ACTIVATION_EMAIL': True,
     'SERIALIZERS': {
-        'user': 'users.serializers.CustomUserSerializer',       
+        'user': 'users.serializers.CustomUserSerializer',
         'user_create': 'users.serializers.CustomUserSerializer',
     },
 }

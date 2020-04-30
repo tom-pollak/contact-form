@@ -22,7 +22,7 @@ from .routing import router
 urlpatterns = [
     path('admin/', admin.site.urls),
     #path('users/', include('users.urls')),
-    path('auth/', include('djoser.urls')),
+    path('', include('djoser.urls')),
     path('auth/', include('djoser.urls.jwt')),
     path('', include((router.urls, 'api'), namespace='api')),
 ]
