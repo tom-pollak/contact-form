@@ -1,10 +1,10 @@
-from django.shortcuts import render
 from django.db.utils import IntegrityError
 from django.db import transaction
 
 from rest_framework import viewsets, status, mixins, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.exceptions import NotFound, ValidationError
 
 from .models import Form, Submission
 from .serializers import FormSerializer, SubmissionSerializer
@@ -14,7 +14,9 @@ class IsOwnerOfSubmission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         form = Form.objects.get(pk=view.kwargs['form_pk'])
-        return form.created_by == request.user
+        if form.created_by == request.user:
+            return True
+        raise NotFound
 
 
 class FormViewSet(viewsets.ModelViewSet):
@@ -32,17 +34,13 @@ class FormViewSet(viewsets.ModelViewSet):
             return err
 
     def error_msg(self, err):
-        msg = None
+        msg = {}
         if err:
             if 'name' in str(err):
-                err = 'name'
-            elif 'url' in str(err):
-                err = 'url'
-            else:
-                raise Exception('Error can\'t be identified: \n%s' % (err))
-
-            msg = 'User already created a form with that %s.' % (err)
-        return err, msg
+                msg['name'] = ['You have already created a form with that name']
+            if 'url' in str(err):
+                msg['url'] = ['You have already created a form with that url']
+            raise ValidationError(msg, code=400)
 
     def get_queryset(self):
         user = self.request.user
@@ -52,13 +50,9 @@ class FormViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         err = self.handle_integrity(serializer)
-        if err:
-            err, msg = self.error_msg(err)
-            return Response({err: msg}, status=status.HTTP_400_BAD_REQUEST)
-
-        else:
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        self.error_msg(err)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
@@ -73,12 +67,8 @@ class FormViewSet(viewsets.ModelViewSet):
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
 
-        err, msg = self.error_msg(err)
-        if msg:
-            return Response({err: msg}, status=status.HTTP_400_BAD_REQUEST)
-
-        else:
-            return Response(serializer.data)
+        self.error_msg(err)
+        return Response(serializer.data)
 
 
 class SubmissionViewSet(mixins.CreateModelMixin,
@@ -88,11 +78,6 @@ class SubmissionViewSet(mixins.CreateModelMixin,
 
     serializer_class = SubmissionSerializer
     permission_classes = (IsAuthenticated, IsOwnerOfSubmission,)
-
-    def get_queryset(self, request, *args, **kwargs):
-        print('got here')
-        form_pk = self.kwargs['form_pk']
-        return Submission.objects.filter(form_id=form_pk)
 
     def perform_create(self, serializer):
         form_pk = self.kwargs['form_pk']
