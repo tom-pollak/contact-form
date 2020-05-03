@@ -22,16 +22,9 @@ export default {
     FormCard
   },
   created() {
-    return axios
-      .get('//localhost:8000/forms/')
-      .then(response => {
-        if (response.status === 200) {
-          this.forms = response.data
-        }
-      })
-      .catch(error => {
-        console.log('Error:', error.response)
-      })
+    return axios.get('//localhost:8000/forms/').then(response => {
+      this.forms = response.data
+    })
   }
 }
 </script>

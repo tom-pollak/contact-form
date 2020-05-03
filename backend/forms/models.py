@@ -26,7 +26,7 @@ class Form(models.Model):
         return self.name
 
 
-class Submissions(models.Model):
+class Submission(models.Model):
     form = models.ForeignKey('Form', on_delete=models.CASCADE)
     key = models.CharField(max_length=50, unique=True)
     form_submitted = models.DateTimeField(auto_now_add=True)

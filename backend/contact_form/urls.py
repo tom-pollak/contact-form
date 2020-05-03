@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt import views as jwt_views
 
-from .routing import router
+from .routing import router, forms_router
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,4 +25,5 @@ urlpatterns = [
     path('', include('djoser.urls')),
     path('auth/', include('djoser.urls.jwt')),
     path('', include((router.urls, 'api'), namespace='api')),
+    path('', include((forms_router.urls, 'sub-api'), namespace='sub-api'))
 ]

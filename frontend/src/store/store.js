@@ -31,14 +31,28 @@ export default new Vuex.Store({
     },
     logout({ commit }) {
       commit('CLEAR_USER_DATA')
+    },
+    refresh({ state, commit }) {
+      if (state.user) {
+        return axios
+          .post('//localhost:8000/auth/jwt/refresh/', {
+            refresh: state.user.refresh
+          })
+          .then(({ data }) => {
+            commit('SET_USER_DATA', {
+              access: data.access,
+              refresh: state.user.refresh
+            })
+          })
+      }
     }
   },
   getters: {
     loggedIn(state) {
       return !!state.user
     },
-    refeshToken(state) {
-      return state.user.refresh
+    accessToken(state) {
+      return state.user.access
     }
   },
   modules: {}
