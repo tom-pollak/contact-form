@@ -15,19 +15,26 @@ class Form(models.Model):
     last_submitted = models.DateTimeField(null=True)
 
     class Meta:
+        '''
         constraints = [
             models.UniqueConstraint(
                 fields=['created_by', 'name'], name='created-name'),
             models.UniqueConstraint(
                 fields=['created_by', 'url'], name='created-url'),
         ]
+        '''
+        unique_together = (
+            ('created_by', 'name',),
+            ('created_by', 'url',)
+        )
 
     def __str__(self):
         return self.name
 
 
 class Submission(models.Model):
-    form = models.ForeignKey('Form', on_delete=models.CASCADE)
+    form = models.ForeignKey(
+        'Form', on_delete=models.CASCADE, related_name='submission')
     key = models.CharField(max_length=50, unique=True)
     form_submitted = models.DateTimeField(auto_now_add=True)
     form_recieved = models.DateTimeField(null=True)

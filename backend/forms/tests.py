@@ -27,6 +27,9 @@ class FormTest(APITestCase):
         'email': 'testalt@user.com',
         'password': 'foo',
     }
+    submission_data = {
+        'key': 'testkey',
+    }
 
     def setUp(self):
         User = get_user_model()
@@ -52,6 +55,21 @@ class FormTest(APITestCase):
             'sub-api:submission-list', kwargs={'form_pk': pk}
         )
 
+    def get_submission_detail_url(self, form_pk, sub_pk):
+        return reverse(
+            'sub-api:submission-detail', kwargs={'form_pk': form_pk, 'pk': sub_pk}
+        )
+
+    def create_form(self):
+        response = self.client.post(self.forms_url, data=self.form_data)
+        return response.data['id']
+
+    def create_submission(self):
+        id = self.create_form()
+        response = self.client.post(
+            self.get_submission_url(id), data=self.submission_data)
+        return id, response.data['id']
+
     def test_get_forms(self):
         response = self.client.get(self.forms_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -61,26 +79,36 @@ class FormTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         response = self.client.get(self.forms_url)
-        self.assertEqual(self.form_data['name'], response.json()[0]['name'])
+        self.assertEqual(self.form_data['name'], response.data[0].get('name'))
 
     def test_create_same_name_url(self):
-        self.client.post(self.forms_url, data=self.form_data)
+        self.create_form()
+        # data = copy.deepcopy(self.form_data)
+        # data['test_period'] = -1
         response = self.client.post(self.forms_url, data=self.form_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(
-            response.json()[
-                'name'][0], 'You have already created a form with that name'
-        )
+
+        if self.assertIn('name', response.data, msg='Name error not found'):
+            self.assertEqual(
+                response.data.get(
+                    'name')[0], 'You have already created a form with that name'
+            )
+
         # ------------------------------------------------------------------
         # should also return error for url but integrity error in view only
         # does 1 error at a time
+        if self.assertIn('url', response.data, msg='URL error not found'):
+            self.assertEqual(
+                response.data.get(
+                    'url')[0], 'You have already created a form with that url'
+            )
 
     def test_create_form_with_neg_time_period(self):
         data_copy = copy.deepcopy(self.form_data)
         data_copy['test_period'] = -1
         response = self.client.post(self.forms_url, data=data_copy)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json()['test_period'][0],
+        self.assertEqual(response.data.get('test_period')[0],
                          'Ensure this value is greater than or equal to 0.')
 
     def test_create_form_with_different_user(self):
@@ -91,8 +119,7 @@ class FormTest(APITestCase):
         self.assertEqual(response.data['created_by'], 1)
 
     def test_patch_form(self):
-        response = self.client.post(self.forms_url, data=self.form_data)
-        id = response.data['id']
+        id = self.create_form()
 
         response = self.client.patch(
             self.get_form_detail_url(id), data={'name': 'New'})
@@ -114,82 +141,77 @@ class FormTest(APITestCase):
             'test_period': 5
         }
 
-        response = self.client.post(self.forms_url, data=self.form_data)
-        id = response.data['id']
-
+        id = self.create_form()
         response = self.client.put(
             self.get_form_detail_url(id), data=alt_form_data)  # change data to alt data
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        response = self.client.post(self.forms_url, data=self.form_data)
-        id = response.data['id']
+        self.assertEqual(response.data['name'], 'Alt test')
+        self.create_form()
 
         # url is same as prev breaking unique integrity
         response = self.client.put(
-            self.get_form_detail_url(id), data=alt_form_data)
+            self.get_form_detail_url(id), data=self.form_data)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_delete_form(self):
-        data = {
-            'name': 'Test',
-            'url': 'https://test.com',
-            'test_period': 5
-        }
-        response = self.client.post(self.forms_url, data=data)
-        id = response.data['id']
+        id = self.create_form()
 
         response = self.client.delete(self.get_form_detail_url(id))
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    def test_create_submission(self):
-        data = {
-            'name': 'Test',
-            'url': 'https://test.com',
-            'test_period': 5
-        }
-        response = self.client.post(self.forms_url, data=data)
-        id = response.data['id']
+    def test_get_submission_from_form(self):
+        id = self.create_form()
+        self.client.post(
+            self.get_submission_url(id), data=self.submission_data)
 
-        submission_data = {
-            'key': 'testkey',
-        }
+        response = self.client.get(self.forms_url)
+        key = response.data[0].get('submission')[0].get('key')
+        self.assertEqual(self.submission_data['key'], key)
+
+    def test_create_submission(self):
+        id = self.create_form()
         response = self.client.post(
-            self.get_submission_url(id), data=submission_data)
+            self.get_submission_url(id), data=self.submission_data)
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(self.submission_data['key'], response.data['key'])
 
         self.get_token(self.alt_user_credentials)
         response = self.client.post(
-            self.get_submission_url(id), data=submission_data)
+            self.get_submission_url(id), data=self.submission_data)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    '''
     def test_retrieve_submission(self):
-        data = {
-            'name': 'Test',
-            'url': 'https://test.com',
-            'test_period': 5
-        }
-        response = self.client.post(self.forms_url, data=data)
-        id = response.data['id']
+        id, sub_id = self.create_submission()
 
-        test_create_submission()
+        response = self.client.get(
+            self.get_submission_detail_url(id, sub_id))
 
-        response  = self.client.post(self.submissions_url, kwargs={
-                                     'form_pk': id, 'pk': submission_pk})
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            self.submission_data['key'], response.data.get('key'))
+
+        self.get_token(self.alt_user_credentials)
+        response = self.client.get(self.get_submission_detail_url(id, sub_id))
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_edit_submission(self):
+        id, sub_pk = self.create_submission()
+
+        response = self.client.patch(
+            self.get_submission_detail_url(id, sub_pk), data={'key': 'key2'})
+
+        self.assertEqual(response.status_code,
+                         status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_delete_submission(self):
-        data = {
-            'name': 'Test',
-            'url': 'https://test.com',
-            'test_period': 5
-        }
-        response = self.client.post(self.forms_url, data=data)
-        id = response.data['id']
+        id, sub_pk = self.create_submission()
 
-        response  = self.client.post(
-            self.submissions_url, kwargs={'form_pk': id})
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-    '''
+        response = self.client.delete(
+            self.get_submission_detail_url(id, sub_pk))
+
+        self.assertEqual(response.status_code,
+                         status.HTTP_204_NO_CONTENT)
