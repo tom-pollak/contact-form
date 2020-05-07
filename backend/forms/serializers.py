@@ -33,16 +33,11 @@ class FormSerializer(serializers.ModelSerializer):
         name = attrs.get('name')
         url = attrs.get('url')
 
-        name_obj = Form.objects.filter(created_by=user, name=name).first()
-        url_obj = Form.objects.filter(created_by=user, url=url).first()
+        name_obj = Form.objects.filter(created_by=user, name=name).exists()
+        url_obj = Form.objects.filter(created_by=user, url=url).exists()
 
         if not name_obj and not url_obj:
             return attrs
-
-        elif (name_obj and name_obj.id == attrs.get('id')) or (url_obj and url_obj.id == attrs.get('id')):
-            print('hererere')
-            return attrs
-
         else:
             msg = {}
             if name_obj:

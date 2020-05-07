@@ -124,6 +124,7 @@ class FormTest(APITestCase):
         response = self.client.patch(
             self.get_form_detail_url(id), data={'name': 'New'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], 'New')
 
         response = self.client.patch(
             self.get_form_detail_url(id), data={'created_by': 2})  # attempt to change owner
