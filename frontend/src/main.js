@@ -3,7 +3,6 @@ import App from './App.vue'
 import router from './router'
 import store from './store/store'
 import axios from 'axios'
-//import createAuthRefreshInterceptor from 'axios-auth-refresh'
 
 Vue.config.productionTip = false
 
@@ -16,19 +15,7 @@ new Vue({
       const userData = JSON.parse(userString)
       this.$store.commit('SET_USER_DATA', userData)
     }
-    /*
-    const refreshAuthLogic = failedRequest =>
-      this.$store
-        .dispatch('refresh')
-        .then(() => {
-          failedRequest
-        })
-        .catch(err => {
-          this.$store.dispatch('logout')
-          return Promise.reject(err)
-        })
-    createAuthRefreshInterceptor(axios, refreshAuthLogic)
-    */
+
     axios.interceptors.response.use(
       response => response,
       error => {
