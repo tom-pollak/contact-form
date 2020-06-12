@@ -24,7 +24,6 @@ class FormSerializer(serializers.ModelSerializer):
                   'creation_date', 'created_by', 'active',
                   'confirmed', 'last_submitted', 'submission'
                   )
-
         read_only_fields = ('created_by', 'creation_date', 'submission')
 
     def validate(self, attrs):
@@ -32,8 +31,10 @@ class FormSerializer(serializers.ModelSerializer):
         attrs['created_by'] = user
         name = attrs.get('name')
         url = attrs.get('url')
+        user = attrs.get('created_by')
 
-        name_obj = Form.objects.filter(created_by=user, name=name).exists()
+        name_obj = Form.objects.filter(
+            created_by=user, name=name).exists()
         url_obj = Form.objects.filter(created_by=user, url=url).exists()
 
         if not name_obj and not url_obj:

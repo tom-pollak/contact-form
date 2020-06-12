@@ -15,14 +15,6 @@ class Form(models.Model):
     last_submitted = models.DateTimeField(null=True)
 
     class Meta:
-        '''
-        constraints = [
-            models.UniqueConstraint(
-                fields=['created_by', 'name'], name='created-name'),
-            models.UniqueConstraint(
-                fields=['created_by', 'url'], name='created-url'),
-        ]
-        '''
         unique_together = (
             ('created_by', 'name',),
             ('created_by', 'url',)
