@@ -92,17 +92,8 @@ if os.path.isfile(dotenv_file):
 
 DATABASES = {
     'default': {
-<<<<<<< HEAD
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-=======
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'contact_form',
-        'USER': 'admin',
-        'PASSWORD': 'localdjango',
-        'HOST': 'localhost',
-        'PORT': '',
->>>>>>> 148e4c13c9df58e9d17531719182fc3832be0eb0
     }
 }
 

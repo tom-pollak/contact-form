@@ -95,8 +95,6 @@ class FormTest(APITestCase):
 
     def test_create_form_with_neg_time_period(self):
         response = self.client.get(self.forms_url)
-        print(response.data)
-        print(response)
         data = {'name': 'Test', 'url': 'https://test.com', 'test_period': -1}
 
         response = self.client.post(self.forms_url, data=data)
